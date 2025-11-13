@@ -1,6 +1,6 @@
 //
 //  DeckListView.swift
-//  App Tango
+//  iDev Tango
 //
 //  フォルダ一覧画面（起動画面）
 //  グラデーション背景に白い角丸カードでデッキを表示

@@ -1,6 +1,6 @@
 //
 //  CardListView.swift
-//  App Tango
+//  iDev Tango
 //
 //  単語一覧画面
 //  フォルダ内の単語リストを表示し、編集・削除が可能

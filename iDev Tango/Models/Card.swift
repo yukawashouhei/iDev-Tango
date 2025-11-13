@@ -1,6 +1,6 @@
 //
 //  Card.swift
-//  App Tango
+//  iDev Tango
 //
 //  単語カードのデータモデル
 //  各カードは単語（term）とAI生成の定義（definition）を持つ

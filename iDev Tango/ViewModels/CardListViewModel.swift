@@ -1,6 +1,6 @@
 //
 //  CardListViewModel.swift
-//  App Tango
+//  iDev Tango
 //
 //  単語一覧画面のViewModel
 //  カードの作成・削除・一覧取得を管理

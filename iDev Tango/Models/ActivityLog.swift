@@ -1,6 +1,6 @@
 //
 //  ActivityLog.swift
-//  App Tango
+//  iDev Tango
 //
 //  学習アクティビティログのデータモデル
 //  日付ごとの学習回数を記録

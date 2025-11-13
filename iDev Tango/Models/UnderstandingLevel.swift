@@ -1,6 +1,6 @@
 //
 //  UnderstandingLevel.swift
-//  App Tango
+//  iDev Tango
 //
 //  理解度レベル管理
 //  間隔反復学習のための理解度定義
