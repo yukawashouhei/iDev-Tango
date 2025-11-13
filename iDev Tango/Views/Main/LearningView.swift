@@ -1,6 +1,6 @@
 //
 //  LearningView.swift
-//  App Tango
+//  iDev Tango
 //
 //  学習画面
 //  カードフリップアニメーションで単語と定義を表示
@@ -22,6 +22,9 @@ struct LearningView: View {
     // 学習用の固定カード配列（Stateで保持）
     @State private var cards: [Card] = []
     
+    // 「説明できる」を押した回数
+    @State private var correctCount = 0
+    
     var body: some View {
         ZStack {
             // グラデーション背景
@@ -37,9 +40,13 @@ struct LearningView: View {
             
             if showCompletion {
                 // 完了画面
-                CompletionView(onDismiss: {
-                    dismiss()
-                })
+                let understandingRate = calculateUnderstandingRate()
+                CompletionView(
+                    understandingRate: understandingRate,
+                    onDismiss: {
+                        dismiss()
+                    }
+                )
             } else if !cards.isEmpty {
                 VStack(spacing: 30) {
                     // デッキ名とプログレス
@@ -88,6 +95,7 @@ struct LearningView: View {
                             .accessibilityHint("この単語の意味を説明できない場合にタップしてください")
                             
                             Button("説明できる") {
+                                correctCount += 1
                                 updateUnderstanding(isCorrect: true)
                                 nextCard()
                             }
@@ -124,6 +132,7 @@ struct LearningView: View {
         .onAppear {
             // カード配列を固定化（学習中は変更しない）
             cards = initialCards
+            correctCount = 0 // カウントをリセット
             print("🎯 学習開始: カード配列を固定化 - \(cards.count)枚")
             for (index, card) in cards.enumerated() {
                 print("  \(index): \(card.term) (ID: \(card.id))")
@@ -169,6 +178,17 @@ struct LearningView: View {
             print("🏁 全カード完了")
             showCompletion = true
         }
+    }
+    
+    // 理解度を計算
+    private func calculateUnderstandingRate() -> Int {
+        let totalQuestions = cards.count
+        guard totalQuestions > 0 else {
+            return 0
+        }
+        
+        let rate = Int((Double(correctCount) / Double(totalQuestions)) * 100)
+        return min(rate, 100) // 最大100%
     }
 }
 
@@ -234,7 +254,12 @@ struct CardFaceView: View {
 
 // 完了画面
 struct CompletionView: View {
+    let understandingRate: Int
     let onDismiss: () -> Void
+    
+    private var completionMessage: String {
+        CompletionMessageService.shared.getMessage(for: understandingRate)
+    }
     
     var body: some View {
         VStack(spacing: 30) {
@@ -248,9 +273,11 @@ struct CompletionView: View {
                 .font(.largeTitle)
                 .fontWeight(.bold)
             
-            Text("お疲れ様でした😊")
+            Text(completionMessage)
                 .font(.title3)
                 .foregroundColor(.gray)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 30)
             
             Spacer()
             

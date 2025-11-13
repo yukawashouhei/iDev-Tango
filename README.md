@@ -1,10 +1,10 @@
-# App Tango
+# iDev Tango
 
 Apple Intelligence搭載のAI単語帳アプリ
 
 ## 概要
 
-App Tangoは、iOS 26のFoundation Models Frameworkを使用したAI単語帳アプリです。アプリエンジニア向けの技術用語を効率的に学習できます。
+iDev Tangoは、iOS 26のFoundation Models Frameworkを使用したAI単語帳アプリです。アプリエンジニア向けの技術用語を効率的に学習できます。
 
 ## 主な機能
 
@@ -38,7 +38,7 @@ App Tangoは、iOS 26のFoundation Models Frameworkを使用したAI単語帳ア
 
 ### プロジェクト構造
 ```
-App Tango/
+iDev Tango/
 ├── Models/           # データモデル
 │   ├── Deck.swift
 │   ├── Card.swift
@@ -111,4 +111,4 @@ App Tango/
 
 ---
 
-**App Tango** - Apple Intelligenceで学ぶ、新しい単語帳体験 🚀
+**iDev Tango** - Apple Intelligenceで学ぶ、新しい単語帳体験 🚀

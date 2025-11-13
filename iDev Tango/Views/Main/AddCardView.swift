@@ -1,6 +1,6 @@
 //
 //  AddCardView.swift
-//  App Tango
+//  iDev Tango
 //
 //  単語登録画面
 //  AI定義生成機能を搭載し、手動入力にも対応

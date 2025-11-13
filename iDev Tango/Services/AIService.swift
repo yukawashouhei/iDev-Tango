@@ -1,6 +1,6 @@
 //
 //  AIService.swift
-//  App Tango
+//  iDev Tango
 //
 //  Foundation Models Frameworkを使用したAI定義生成サービス
 //  オンデバイスAIで単語の定義を生成

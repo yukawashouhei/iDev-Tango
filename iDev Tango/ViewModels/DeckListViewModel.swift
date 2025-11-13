@@ -1,6 +1,6 @@
 //
 //  DeckListViewModel.swift
-//  App Tango
+//  iDev Tango
 //
 //  フォルダ一覧画面のViewModel
 //  デッキの作成・削除・一覧取得を管理

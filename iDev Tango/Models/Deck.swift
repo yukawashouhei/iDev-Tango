@@ -1,6 +1,6 @@
 //
 //  Deck.swift
-//  App Tango
+//  iDev Tango
 //
 //  フォルダ（デッキ）のデータモデル
 //  SwiftDataを使用してローカルDBに保存

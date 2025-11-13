@@ -1,6 +1,6 @@
 //
 //  LearningService.swift
-//  App Tango
+//  iDev Tango
 //
 //  間隔反復学習サービス
 //  理解度に応じた出題頻度とランダム出題を管理
