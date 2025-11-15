@@ -179,7 +179,6 @@ struct ConfettiView: View {
         let deltaTime = 1.0 / 60.0 // 60FPS
         let elapsed = now.timeIntervalSince(startTime)
         
-        // 重力（元の実装に合わせて1/1000程度）
         let gravity: CGFloat = 0.5 //
         
         // 空気抵抗
