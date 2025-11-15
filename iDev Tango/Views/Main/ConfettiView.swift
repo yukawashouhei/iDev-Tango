@@ -28,7 +28,6 @@ struct ConfettiView: View {
     @State private var particles: [ConfettiParticle] = []
     @State private var animationStartTime: Date?
     
-    // iOSDC Japan 2025風の設定
     let particleCount = 100
     let animationDuration: TimeInterval = 4.0 // 4秒で終了
     
@@ -124,8 +123,11 @@ struct ConfettiView: View {
         particles = []
         
         for _ in 0..<particleCount {
-            // 全方向に広がる（360度）
-            let angle = Double.random(in: 0..<(2 * .pi))
+            // 上方向に偏った角度分布
+            // -90度（上）を中心に、±90度の範囲に集中させる
+            let baseAngle = -Double.pi / 2  // -90度（上方向）
+            let spread = Double.pi / 2  // ±90度の範囲
+            let angle = baseAngle + Double.random(in: -spread..<spread)
             
             // ゆっくりとした速度（元の実装に合わせて1/10程度）
             let speed = Double.random(in: 20...40) // 元: 200-400 → 20-40
@@ -135,9 +137,9 @@ struct ConfettiView: View {
             let vy = sin(angle) * speed
             
             // 長方形のサイズ（幅と高さを別々に設定）
-            let baseSize = CGFloat.random(in: 8...16)
-            let width = baseSize * CGFloat.random(in: 0.8...2.0)  // 縦長・横長のバリエーション
-            let height = baseSize * CGFloat.random(in: 0.8...1.2)
+            let baseSize = CGFloat.random(in: 6...14)
+            let width = baseSize * CGFloat.random(in: 0.6...1.8)  // 縦長・横長のバリエーション
+            let height = baseSize * CGFloat.random(in: 0.6...1.0)
             
             // ランダムな色
             let color = colors.randomElement() ?? .blue
@@ -178,7 +180,7 @@ struct ConfettiView: View {
         let elapsed = now.timeIntervalSince(startTime)
         
         // 重力（元の実装に合わせて1/1000程度）
-        let gravity: CGFloat = 0.5 // 元: 500.0 → 0.5
+        let gravity: CGFloat = 0.5 //
         
         // 空気抵抗
         let drag: CGFloat = 0.998
