@@ -25,6 +25,9 @@ struct LearningView: View {
     // 「説明できる」を押した回数
     @State private var correctCount = 0
     
+    // 連続正解数（紙吹雪用）
+    @State private var consecutiveCorrectCount = 0
+    
     var body: some View {
         ZStack {
             // グラデーション背景
@@ -41,8 +44,10 @@ struct LearningView: View {
             if showCompletion {
                 // 完了画面
                 let understandingRate = calculateUnderstandingRate()
+                let showConfetti = consecutiveCorrectCount >= 10
                 CompletionView(
                     understandingRate: understandingRate,
+                    showConfetti: showConfetti,
                     onDismiss: {
                         dismiss()
                     }
@@ -84,6 +89,7 @@ struct LearningView: View {
                     if !isFlipped {
                         HStack(spacing: 20) {
                             Button("説明できない") {
+                                consecutiveCorrectCount = 0 // 連続正解をリセット
                                 updateUnderstanding(isCorrect: false)
                                 // カードをフリップして次へボタンを表示
                                 withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
@@ -96,6 +102,7 @@ struct LearningView: View {
                             
                             Button("説明できる") {
                                 correctCount += 1
+                                consecutiveCorrectCount += 1 // 連続正解数を増やす
                                 updateUnderstanding(isCorrect: true)
                                 nextCard()
                             }
@@ -133,6 +140,7 @@ struct LearningView: View {
             // カード配列を固定化（学習中は変更しない）
             cards = initialCards
             correctCount = 0 // カウントをリセット
+            consecutiveCorrectCount = 0 // 連続正解数をリセット
             print("🎯 学習開始: カード配列を固定化 - \(cards.count)枚")
             for (index, card) in cards.enumerated() {
                 print("  \(index): \(card.term) (ID: \(card.id))")
@@ -255,6 +263,7 @@ struct CardFaceView: View {
 // 完了画面
 struct CompletionView: View {
     let understandingRate: Int
+    let showConfetti: Bool
     let onDismiss: () -> Void
     
     private var completionMessage: String {
@@ -262,36 +271,53 @@ struct CompletionView: View {
     }
     
     var body: some View {
-        VStack(spacing: 30) {
-            Spacer()
-            
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 80))
-                .foregroundColor(.green)
-            
-            Text("学習完了！")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-            
-            Text(completionMessage)
-                .font(.title3)
-                .foregroundColor(.gray)
-                .multilineTextAlignment(.center)
+        ZStack {
+            VStack(spacing: 30) {
+                Spacer()
+                
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 80))
+                    .foregroundColor(.green)
+                
+                Text("学習完了！")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                
+                if showConfetti {
+                    Text("🎉 10問連続正解！素晴らしい！🎉")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.orange)
+                        .padding(.bottom, 10)
+                }
+                
+                Text(completionMessage)
+                    .font(.title3)
+                    .foregroundColor(.gray)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 30)
+                
+                Spacer()
+                
+                Button(action: onDismiss) {
+                    Text("閉じる")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .cornerRadius(25)
+                }
                 .padding(.horizontal, 30)
-            
-            Spacer()
-            
-            Button(action: onDismiss) {
-                Text("閉じる")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .cornerRadius(25)
+                .padding(.bottom, 30)
             }
-            .padding(.horizontal, 30)
-            .padding(.bottom, 30)
+            .zIndex(1) // VStackを前面に表示
+            
+            // 紙吹雪アニメーション
+            if showConfetti {
+                ConfettiView()
+                    .allowsHitTesting(false) // タップイベントを透過
+            }
         }
     }
 }
