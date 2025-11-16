@@ -201,9 +201,9 @@ class InitialDataService {
             let swiftDeck = Deck(name: "Swift")
             context.insert(swiftDeck)
             
-            // 全てのカードを作成して追加
+            // 全てのカードを作成して追加（デフォルト単語として設定）
             for (term, definition) in swiftGlossary {
-                let card = Card(term: term, definition: definition, deck: swiftDeck)
+                let card = Card(term: term, definition: definition, deck: swiftDeck, isDefault: true)
                 context.insert(card)
             }
             
