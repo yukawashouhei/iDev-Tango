@@ -8,6 +8,7 @@
 
 import Foundation
 import CryptoKit
+import os.log
 
 /// GitHub用語集データモデル
 struct GlossaryItem: Codable, Sendable {
@@ -54,6 +55,9 @@ enum GitHubGlossaryError: LocalizedError {
 class GitHubGlossaryService {
     static let shared = GitHubGlossaryService()
     
+    // ログ用のサブシステム
+    private let logger = Logger(subsystem: "com.idevtango", category: "GitHubGlossaryService")
+    
     private init() {}
     
     // GitHubリポジトリの設定（後で設定可能にする）
@@ -70,7 +74,10 @@ class GitHubGlossaryService {
     /// - Parameter token: GitHub Personal Access Token（オプション、読み取り専用）
     /// - Returns: 用語集データ
     func fetchGlossary(token: String? = nil) async throws -> GlossaryData {
+        logger.info("🌐 GitHub APIにリクエストを送信: \(self.baseURL)")
+        
         guard let url = URL(string: baseURL) else {
+            logger.error("❌ 無効なURL: \(self.baseURL)")
             throw GitHubGlossaryError.invalidURL
         }
         
@@ -81,42 +88,53 @@ class GitHubGlossaryService {
         // 認証トークンが提供されている場合は追加
         if let token = token {
             request.setValue("token \(token)", forHTTPHeaderField: "Authorization")
+            logger.info("🔐 認証トークンを使用してリクエスト")
         }
         
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
             
             guard let httpResponse = response as? HTTPURLResponse else {
+                logger.error("❌ 無効なHTTPレスポンス")
                 throw GitHubGlossaryError.invalidResponse
             }
             
             guard (200...299).contains(httpResponse.statusCode) else {
+                logger.error("❌ HTTPステータスコードエラー: \(httpResponse.statusCode)")
                 throw GitHubGlossaryError.invalidResponse
             }
+            
+            logger.info("✅ HTTPレスポンス取得成功: \(httpResponse.statusCode)")
             
             // GitHub APIのレスポンスはBase64エンコードされている
             let githubResponse = try JSONDecoder().decode(GitHubContentResponse.self, from: data)
             
             guard let contentData = Data(base64Encoded: githubResponse.content, options: .ignoreUnknownCharacters) else {
+                logger.error("❌ Base64デコードに失敗")
                 throw GitHubGlossaryError.decodingError(NSError(domain: "Base64Decoding", code: -1))
             }
             
             // JSONをデコード
             let glossaryData = try JSONDecoder().decode(GlossaryData.self, from: contentData)
+            logger.info("✅ JSONデコード成功: \(glossaryData.glossary.count)件の用語を取得")
             
             // 署名検証（オプション、署名が提供されている場合のみ）
             if let signature = glossaryData.signature, !signature.isEmpty {
                 let isValid = try verifySignature(data: contentData, signature: signature)
                 if !isValid {
+                    logger.error("❌ 署名の検証に失敗")
                     throw GitHubGlossaryError.signatureVerificationFailed
                 }
+                logger.info("✅ 署名の検証に成功")
             }
             
             return glossaryData
             
         } catch let error as GitHubGlossaryError {
+            logger.error("❌ GitHub用語集取得エラー: \(error.localizedDescription ?? "不明なエラー")")
             throw error
         } catch {
+            logger.error("❌ ネットワークエラー: \(error.localizedDescription)")
             throw GitHubGlossaryError.networkError(error)
         }
     }
