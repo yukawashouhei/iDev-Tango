@@ -19,14 +19,19 @@ struct ContentView: View {
     
     var body: some View {
         DeckListView()
-            .task {
-                // 初回のみ初期データを投入
-                if !hasSeededData {
-                    await initializeGlossary()
-                    hasSeededData = true
-                }
-            }
             .onAppear {
+                // 「Swift」デッキを即座に作成（存在しない場合のみ）
+                // これにより、UIが即座に表示され、カードは後から非同期で追加される
+                ensureSwiftDeckExists()
+                
+                // 初回のみ初期データを投入（非同期で実行）
+                if !hasSeededData {
+                    Task {
+                        await initializeGlossary()
+                        hasSeededData = true
+                    }
+                }
+                
                 // バックグラウンドタスクから同期が必要とマークされている場合、または1日1回の定期チェックが必要な場合
                 let syncNeeded = UserDefaults.standard.bool(forKey: "glossary_sync_needed")
                 if syncNeeded || GlossarySyncService.shared.shouldCheckForUpdate() {
@@ -36,6 +41,30 @@ struct ContentView: View {
                     }
                 }
             }
+    }
+    
+    /// 「Swift」デッキが存在することを確認（存在しない場合は作成）
+    /// UIを即座に表示するために、カードの追加前にデッキを作成
+    private func ensureSwiftDeckExists() {
+        let deckDescriptor = FetchDescriptor<Deck>(
+            predicate: #Predicate<Deck> { deck in
+                deck.name == "Swift"
+            }
+        )
+        
+        do {
+            let existingDecks = try modelContext.fetch(deckDescriptor)
+            if existingDecks.isEmpty {
+                // 「Swift」デッキが存在しない場合は作成
+                let swiftDeck = Deck(name: "Swift")
+                modelContext.insert(swiftDeck)
+                try modelContext.save()
+                modelContext.processPendingChanges()
+                logger.info("✅ 「Swift」デッキを即座に作成しました")
+            }
+        } catch {
+            logger.error("❌ 「Swift」デッキの確認に失敗: \(error.localizedDescription)")
+        }
     }
     
     /// 用語集を初期化（GitHubから取得、キャッシュフォールバック付き）
