@@ -88,8 +88,9 @@ class LearningService: ObservableObject {
         let totalWeight = weightedCardPairs.reduce(0) { $0 + $1.weight }
         
         // ランダムに選択（重みを考慮）
+        let shuffledPairs = weightedCardPairs.shuffled()
+        
         var remainingSlots = maxQuestions
-        var shuffledPairs = weightedCardPairs.shuffled()
         
         for pair in shuffledPairs {
             if remainingSlots <= 0 { break }
@@ -184,3 +185,4 @@ class LearningService: ObservableObject {
         }
     }
 }
+
