@@ -131,7 +131,7 @@ class GitHubGlossaryService {
             return glossaryData
             
         } catch let error as GitHubGlossaryError {
-            logger.error("❌ GitHub用語集取得エラー: \(error.localizedDescription ?? "不明なエラー")")
+            logger.error("❌ GitHub用語集取得エラー: \(error.localizedDescription)\n")
             throw error
         } catch {
             logger.error("❌ ネットワークエラー: \(error.localizedDescription)")
