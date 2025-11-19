@@ -8,6 +8,7 @@
 
 import SwiftUI
 import SwiftData
+import os.log
 
 struct LearningView: View {
     let initialCards: [Card] // 初期カード配列
@@ -27,6 +28,9 @@ struct LearningView: View {
     
     // 連続正解数（紙吹雪用）
     @State private var consecutiveCorrectCount = 0
+    
+    // ログ用のサブシステム
+    private let logger = Logger(subsystem: "com.idevtango", category: "LearningView")
     
     var body: some View {
         ZStack {
@@ -77,11 +81,6 @@ struct LearningView: View {
                         isFlipped: $isFlipped
                     )
                     .padding(.horizontal, 30)
-                    .onAppear {
-                        let currentCard = cards[currentIndex]
-                        print("📱 カード表示: インデックス\(currentIndex), カードID: \(currentCard.id), 単語: \(currentCard.term)")
-                        print("📱 カード配列確認: 総数\(cards.count), 現在のインデックス\(currentIndex)")
-                    }
                     
                     Spacer()
                     
@@ -141,10 +140,7 @@ struct LearningView: View {
             cards = initialCards
             correctCount = 0 // カウントをリセット
             consecutiveCorrectCount = 0 // 連続正解数をリセット
-            print("🎯 学習開始: カード配列を固定化 - \(cards.count)枚")
-            for (index, card) in cards.enumerated() {
-                print("  \(index): \(card.term) (ID: \(card.id))")
-            }
+            logger.info("🎯 学習開始: カード配列を固定化 - \(cards.count)枚")
             // 学習セッション開始
             learningService.startLearningSession()
         }
@@ -156,16 +152,14 @@ struct LearningView: View {
     
     private func updateUnderstanding(isCorrect: Bool) {
         let currentCard = cards[currentIndex]
-        print("🎯 理解度更新: インデックス\(currentIndex), カードID: \(currentCard.id), 単語: \(currentCard.term)")
         
         learningService.updateUnderstanding(for: currentCard, isCorrect: isCorrect)
         
         // データベースに保存
         do {
             try modelContext.save()
-            print("💾 理解度保存完了: \(currentCard.term)")
         } catch {
-            print("❌ 理解度の保存に失敗: \(error)")
+            logger.error("❌ 理解度の保存に失敗: \(error.localizedDescription)")
         }
     }
     
@@ -173,17 +167,13 @@ struct LearningView: View {
         // カードをリセット
         isFlipped = false
         
-        print("🔄 次のカードへ: 現在のインデックス\(currentIndex), 総カード数\(cards.count)")
-        
         // 次のカードへ
         if currentIndex < cards.count - 1 {
             withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
                 currentIndex += 1
             }
-            print("➡️ インデックス更新: \(currentIndex - 1) → \(currentIndex)")
         } else {
             // 全カード完了
-            print("🏁 全カード完了")
             showCompletion = true
         }
     }
@@ -210,19 +200,11 @@ struct FlipCardView: View {
             // 表面（単語）
             CardFaceView(text: card.term, isLarge: true)
                 .opacity(isFlipped ? 0 : 1)
-                .onAppear {
-                    print("🎴 表面表示: \(card.term) (ID: \(card.id))")
-                }
             
             // 裏面（定義）
             CardFaceView(text: card.definition, isLarge: false)
                 .opacity(isFlipped ? 1 : 0)
                 .rotation3DEffect(.degrees(180), axis: (x: 0, y: 1, z: 0))
-                .onAppear {
-                    if isFlipped {
-                        print("🎴 裏面表示: \(card.term) → \(card.definition) (ID: \(card.id))")
-                    }
-                }
         }
         .rotation3DEffect(
             .degrees(isFlipped ? 180 : 0),
