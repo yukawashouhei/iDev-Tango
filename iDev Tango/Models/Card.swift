@@ -22,15 +22,19 @@ class Card {
     var reviewCount: Int = 0         // 学習回数
     var nextReviewDate: Date?        // 次回学習予定日
     
+    // デフォルト単語フラグ
+    var isDefault: Bool = false       // デフォルト単語かどうか
+    
     var deck: Deck?
     
-    init(term: String, definition: String, deck: Deck? = nil) {
+    init(term: String, definition: String, deck: Deck? = nil, isDefault: Bool = false) {
         self.id = UUID()
         self.term = term
         self.definition = definition
         self.createdAt = Date()
         self.understandingLevel = 0
         self.reviewCount = 0
+        self.isDefault = isDefault
         self.deck = deck
     }
 }

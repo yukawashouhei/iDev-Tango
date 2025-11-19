@@ -4,22 +4,49 @@
 //
 //  単語一覧画面
 //  フォルダ内の単語リストを表示し、編集・削除が可能
+//  SwiftDataの@Queryを使用した最新実装
 //
 
 import SwiftUI
 import SwiftData
+import os.log
 
 struct CardListView: View {
     @Environment(\.modelContext) private var modelContext
-    @StateObject private var viewModel = CardListViewModel()
     @StateObject private var learningService = LearningService.shared
     
     let deck: Deck
+    
+    // SwiftDataの@Queryを使用（最新推奨方法）
+    // データベースの変更を自動的に監視してUIを更新
+    @Query private var cards: [Card]
     
     @State private var showingAddCard = false
     @State private var editingCard: Card?
     @State private var editTerm = ""
     @State private var editDefinition = ""
+    
+    // 学習カード準備用の状態
+    @State private var isLoadingLearningCards = false
+    @State private var preparedLearningCards: [Card] = []
+    @State private var showLearningView = false
+    
+    // ログ用のサブシステム
+    private let logger = Logger(subsystem: "com.idevtango", category: "CardListView")
+    
+    // カスタムイニシャライザで@Queryを初期化
+    init(deck: Deck) {
+        self.deck = deck
+        
+        // デッキ名でフィルタリングした@Queryを初期化
+        let deckName = deck.name
+        _cards = Query(
+            filter: #Predicate<Card> { card in
+                (card.deck?.name ?? "") == deckName
+            },
+            sort: [SortDescriptor<Card>(\.createdAt, order: .forward)]
+        )
+    }
     
     var body: some View {
         ZStack {
@@ -35,14 +62,14 @@ struct CardListView: View {
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                if viewModel.cards.isEmpty {
+                if cards.isEmpty {
                     Spacer()
                     Text("単語を追加してください")
                         .foregroundColor(.gray)
                     Spacer()
                 } else {
                     List {
-                        ForEach(viewModel.cards, id: \.id) { card in
+                        ForEach(cards, id: \.id) { card in
                             CardRowView(card: card)
                                 .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
@@ -74,18 +101,31 @@ struct CardListView: View {
                         .cornerRadius(15)
                     }
                     
-                    NavigationLink(destination: LearningView(initialCards: getLearningCards())) {
+                    Button(action: {
+                        Task {
+                            await prepareLearningCards()
+                        }
+                    }) {
                         HStack {
-                            Image(systemName: "brain.head.profile")
-                            Text("学習する")
+                            if isLoadingLearningCards {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                    .scaleEffect(0.8)
+                            } else {
+                                Image(systemName: "brain.head.profile")
+                            }
+                            Text(isLoadingLearningCards ? "準備中..." : "学習する")
                         }
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(viewModel.cards.isEmpty ? Color.gray : Color.green)
+                        .background(cards.isEmpty || isLoadingLearningCards ? Color.gray : Color.green)
                         .foregroundColor(.white)
                         .cornerRadius(15)
                     }
-                    .disabled(viewModel.cards.isEmpty)
+                    .disabled(cards.isEmpty || isLoadingLearningCards)
+                    .navigationDestination(isPresented: $showLearningView) {
+                        LearningView(initialCards: preparedLearningCards)
+                    }
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 15)
@@ -96,7 +136,7 @@ struct CardListView: View {
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showingAddCard) {
             AddCardView(deck: deck, onCardAdded: {
-                viewModel.fetchCards()
+                logger.info("✅ カードが追加されました")
             })
         }
         .sheet(item: $editingCard) { card in
@@ -105,36 +145,74 @@ struct CardListView: View {
                 term: $editTerm,
                 definition: $editDefinition,
                 onSave: {
-                    viewModel.updateCard(card, term: editTerm, definition: editDefinition)
+                    updateCard(card, term: editTerm, definition: editDefinition)
                     editingCard = nil
                 }
             )
         }
         .onAppear {
-            viewModel.setModelContext(modelContext, deck: deck)
+            logger.info("📋 CardListView表示: デッキ名=\(deck.name), カード数=\(cards.count)")
         }
     }
     
     private func deleteCards(at offsets: IndexSet) {
         for index in offsets {
-            let card = viewModel.cards[index]
-            viewModel.deleteCard(card)
+            let card = cards[index]
+            deleteCard(card)
         }
     }
     
-    // 学習用カードを取得（理解度とランダム性を考慮）
-    private func getLearningCards() -> [Card] {
-        let cards = learningService.selectCardsForReview(from: deck)
-        let maxQuestions = min(10, viewModel.cards.count)
-        print("🎓 CardListView: 学習カード取得完了 - \(cards.count)枚 (最大\(maxQuestions)問)")
-        return cards
+    private func deleteCard(_ card: Card) {
+        modelContext.delete(card)
+        do {
+            try modelContext.save()
+            logger.info("🗑️ カードを削除: \(card.term)")
+        } catch {
+            logger.error("❌ カードの削除に失敗: \(error.localizedDescription)")
+        }
+    }
+    
+    private func updateCard(_ card: Card, term: String, definition: String) {
+        card.term = term
+        card.definition = definition
+        do {
+            try modelContext.save()
+            logger.info("🔄 カードを更新: \(term)")
+        } catch {
+            logger.error("❌ カードの更新に失敗: \(error.localizedDescription)")
+        }
+    }
+    
+    // 学習用カードを非同期で準備（理解度とランダム性を考慮）
+    // @Queryで取得したcardsを使用（パフォーマンス最適化）
+    private func prepareLearningCards() async {
+        guard !cards.isEmpty else { return }
+        
+        isLoadingLearningCards = true
+        
+        // LearningServiceは@MainActorなので、メインスレッドで実行
+        // ただし、重い処理を非同期で実行するために、Task.detachedでIDのみを処理し、
+        // その後メインスレッドでCardオブジェクトを再取得する方法も可能だが、
+        // 現在の実装では直接呼び出す方がシンプルで安全
+        let selectedCards = learningService.selectCardsForReview(from: cards)
+        
+        // UIを更新
+        preparedLearningCards = selectedCards
+        isLoadingLearningCards = false
+        showLearningView = true
+        logger.info("🎓 学習カード取得完了 - \(selectedCards.count)枚")
     }
 }
 
 // カード行ビュー
 struct CardRowView: View {
     let card: Card
-    @StateObject private var learningService = LearningService.shared
+    
+    // 理解度表示名を直接計算（learningServiceの呼び出しを削減）
+    private var understandingDisplayName: String {
+        let level = UnderstandingLevel(rawValue: card.understandingLevel) ?? .new
+        return level.displayName
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -146,7 +224,7 @@ struct CardRowView: View {
                 Spacer()
                 
                 // 理解度表示
-                Text(learningService.getUnderstandingDisplayName(for: card))
+                Text(understandingDisplayName)
                     .font(.caption)
                     .foregroundColor(.white)
                     .padding(.horizontal, 8)

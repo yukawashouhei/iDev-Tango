@@ -4,14 +4,25 @@
 //
 //  フォルダ一覧画面（起動画面）
 //  グラデーション背景に白い角丸カードでデッキを表示
+//  SwiftDataの@Queryを使用した最新実装
 //
 
 import SwiftUI
 import SwiftData
+import os.log
 
 struct DeckListView: View {
     @Environment(\.modelContext) private var modelContext
-    @StateObject private var viewModel = DeckListViewModel()
+    
+    // SwiftDataの@Queryを使用（最新推奨方法）
+    // データベースの変更を自動的に監視してUIを更新
+    @Query(sort: [SortDescriptor<Deck>(\.createdAt, order: .reverse)]) private var decks: [Deck]
+    
+    @State private var showingAddDeck = false
+    @State private var newDeckName = ""
+    
+    // ログ用のサブシステム
+    private let logger = Logger(subsystem: "com.idevtango", category: "DeckListView")
     
     var body: some View {
         NavigationStack {
@@ -36,7 +47,7 @@ struct DeckListView: View {
                     
                     // 新規フォルダ作成ボタン
                     Button(action: {
-                        viewModel.showingAddDeck = true
+                        showingAddDeck = true
                     }) {
                         HStack {
                             Image(systemName: "plus")
@@ -55,16 +66,18 @@ struct DeckListView: View {
                     .padding(.horizontal, 30)
                     
                     // デッキリスト
-                    if viewModel.decks.isEmpty {
+                    if decks.isEmpty {
                         Spacer()
                         Text("フォルダを作成してください")
                             .foregroundColor(.gray)
                         Spacer()
                     } else {
                         List {
-                            ForEach(viewModel.decks, id: \.id) { deck in
+                            ForEach(decks, id: \.id) { deck in
                                 ZStack {
-                                    NavigationLink(destination: CardListView(deck: deck)) {
+                                    NavigationLink {
+                                        CardListView(deck: deck)
+                                    } label: {
                                         EmptyView()
                                     }
                                     .opacity(0)
@@ -76,7 +89,7 @@ struct DeckListView: View {
                                 .listRowInsets(EdgeInsets(top: 7.5, leading: 30, bottom: 7.5, trailing: 30))
                                 .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                     Button(role: .destructive) {
-                                        viewModel.deleteDeck(deck)
+                                        deleteDeck(deck)
                                     } label: {
                                         Label("削除", systemImage: "trash")
                                     }
@@ -88,18 +101,41 @@ struct DeckListView: View {
                     }
                 }
             }
-            .alert("新しいフォルダを作成", isPresented: $viewModel.showingAddDeck) {
-                TextField("フォルダ名", text: $viewModel.newDeckName)
+            .alert("新しいフォルダを作成", isPresented: $showingAddDeck) {
+                TextField("フォルダ名", text: $newDeckName)
                 Button("キャンセル", role: .cancel) {
-                    viewModel.newDeckName = ""
+                    newDeckName = ""
                 }
                 Button("作成") {
-                    viewModel.addDeck(name: viewModel.newDeckName)
+                    addDeck(name: newDeckName)
                 }
             }
-            .onAppear {
-                viewModel.setModelContext(modelContext)
-            }
+        }
+    }
+    
+    private func addDeck(name: String) {
+        guard !name.isEmpty else { return }
+        
+        let newDeck = Deck(name: name)
+        modelContext.insert(newDeck)
+        
+        do {
+            try modelContext.save()
+            newDeckName = ""
+            showingAddDeck = false
+            logger.info("✅ デッキを追加: \(name)")
+        } catch {
+            logger.error("❌ デッキの保存に失敗: \(error.localizedDescription)")
+        }
+    }
+    
+    private func deleteDeck(_ deck: Deck) {
+        modelContext.delete(deck)
+        do {
+            try modelContext.save()
+            logger.info("🗑️ デッキを削除: \(deck.name)")
+        } catch {
+            logger.error("❌ デッキの削除に失敗: \(error.localizedDescription)")
         }
     }
 }
@@ -138,3 +174,4 @@ struct DeckCardView: View {
     DeckListView()
         .modelContainer(for: [Deck.self, Card.self, ActivityLog.self])
 }
+

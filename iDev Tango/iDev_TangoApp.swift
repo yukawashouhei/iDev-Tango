@@ -11,9 +11,18 @@ import SwiftData
 
 @main
 struct iDev_TangoApp: App {
+    init() {
+        // バックグラウンドタスクを登録
+        GlossaryBackgroundTaskService.shared.registerBackgroundTask()
+    }
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .onAppear {
+                    // バックグラウンドタスクをスケジュール
+                    GlossaryBackgroundTaskService.shared.scheduleBackgroundTask()
+                }
         }
         .modelContainer(for: [Deck.self, Card.self, ActivityLog.self])
     }
