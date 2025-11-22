@@ -802,6 +802,11 @@
       "id": "swift-structured-concurrency-name",
       "term": "Structured Concurrency",
       "definition": "Structured Concurrencyは、「構造化並行処理」の英語名で、Taskを親子関係で安全に管理する仕組みです。"
+    },
+    {
+      "id": "swift-array",
+      "term": "Array",
+      "definition": "Arrayは、同じ型のデータを順番（順序）を持ってひとまとめに管理するためのコレクション（データの集まり）です。 「配列」とも呼ばれ、インデックス（番号）を使って中のデータにアクセスできます。"
     }
   ]
 }
