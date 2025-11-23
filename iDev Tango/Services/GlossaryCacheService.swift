@@ -7,10 +7,14 @@
 //
 
 import Foundation
+import os.log
 
 @MainActor
 class GlossaryCacheService {
     static let shared = GlossaryCacheService()
+    
+    // ログ用のサブシステム
+    private let logger = Logger(subsystem: "com.idevtango", category: "GlossaryCacheService")
     
     private init() {}
     
@@ -29,7 +33,7 @@ class GlossaryCacheService {
             let glossaryData = try JSONDecoder().decode(GlossaryData.self, from: data)
             return glossaryData
         } catch {
-            print("❌ キャッシュの読み込みに失敗: \(error)")
+            logger.error("❌ キャッシュの読み込みに失敗: \(error.localizedDescription)")
             return nil
         }
     }
@@ -41,9 +45,9 @@ class GlossaryCacheService {
             let data = try JSONEncoder().encode(glossaryData)
             UserDefaults.standard.set(data, forKey: cacheKey)
             UserDefaults.standard.set(Date(), forKey: lastUpdateKey)
-            print("✅ キャッシュを保存しました")
+            logger.info("✅ キャッシュを保存しました")
         } catch {
-            print("❌ キャッシュの保存に失敗: \(error)")
+            logger.error("❌ キャッシュの保存に失敗: \(error.localizedDescription)")
         }
     }
     
@@ -57,7 +61,7 @@ class GlossaryCacheService {
     func clearCache() {
         UserDefaults.standard.removeObject(forKey: cacheKey)
         UserDefaults.standard.removeObject(forKey: lastUpdateKey)
-        print("✅ キャッシュをクリアしました")
+        logger.info("✅ キャッシュをクリアしました")
     }
     
     /// キャッシュが有効かどうかを判定（24時間以内）

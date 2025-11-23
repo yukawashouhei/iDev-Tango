@@ -9,6 +9,7 @@
 import Foundation
 import FoundationModels
 import Combine
+import os.log
 
 // AI生成のレスポンス構造体
 struct DefinitionResponse {
@@ -48,6 +49,9 @@ class AIService: ObservableObject {
     
     @Published var isAvailable: Bool = false
     @Published var availabilityMessage: String = ""
+    
+    // ログ用のサブシステム
+    private let logger = Logger(subsystem: "com.idevtango", category: "AIService")
     
     private init() {
         checkAvailability()
@@ -114,7 +118,7 @@ class AIService: ObservableObject {
             
             return DefinitionResponse(definition: definition)
         } catch {
-            print("❌ AI生成エラー: \(error)")
+            logger.error("❌ AI生成エラー: \(error.localizedDescription)")
             if let aiError = error as? AIError {
                 throw aiError
             } else {

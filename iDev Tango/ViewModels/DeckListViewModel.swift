@@ -9,12 +9,16 @@
 import Foundation
 import SwiftData
 import Combine
+import os.log
 
 @MainActor
 class DeckListViewModel: ObservableObject {
     @Published var decks: [Deck] = []
     @Published var showingAddDeck = false
     @Published var newDeckName = ""
+    
+    // ログ用のサブシステム
+    private let logger = Logger(subsystem: "com.idevtango", category: "DeckListViewModel")
     
     private var modelContext: ModelContext?
     
@@ -34,7 +38,7 @@ class DeckListViewModel: ObservableObject {
         do {
             decks = try context.fetch(descriptor)
         } catch {
-            print("デッキの取得に失敗: \(error)")
+            logger.error("❌ デッキの取得に失敗: \(error.localizedDescription)")
         }
     }
     
@@ -51,7 +55,7 @@ class DeckListViewModel: ObservableObject {
             newDeckName = ""
             showingAddDeck = false
         } catch {
-            print("デッキの保存に失敗: \(error)")
+            logger.error("❌ デッキの保存に失敗: \(error.localizedDescription)")
         }
     }
     
@@ -65,7 +69,7 @@ class DeckListViewModel: ObservableObject {
             try context.save()
             fetchDecks()
         } catch {
-            print("デッキの削除に失敗: \(error)")
+            logger.error("❌ デッキの削除に失敗: \(error.localizedDescription)")
         }
     }
 }
