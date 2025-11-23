@@ -9,11 +9,15 @@
 import Foundation
 import SwiftData
 import Combine
+import os.log
 
 @MainActor
 class CardListViewModel: ObservableObject {
     @Published var cards: [Card] = []
     @Published var showingAddCard = false
+    
+    // ログ用のサブシステム
+    private let logger = Logger(subsystem: "com.idevtango", category: "CardListViewModel")
     
     private var modelContext: ModelContext?
     private var currentDeck: Deck?
@@ -44,7 +48,7 @@ class CardListViewModel: ObservableObject {
             try context.save()
             fetchCards()
         } catch {
-            print("カードの保存に失敗: \(error)")
+            logger.error("❌ カードの保存に失敗: \(error.localizedDescription)")
         }
     }
     
@@ -58,7 +62,7 @@ class CardListViewModel: ObservableObject {
             try context.save()
             fetchCards()
         } catch {
-            print("カードの削除に失敗: \(error)")
+            logger.error("❌ カードの削除に失敗: \(error.localizedDescription)")
         }
     }
     
@@ -73,7 +77,7 @@ class CardListViewModel: ObservableObject {
             try context.save()
             fetchCards()
         } catch {
-            print("カードの更新に失敗: \(error)")
+            logger.error("❌ カードの更新に失敗: \(error.localizedDescription)")
         }
     }
 }

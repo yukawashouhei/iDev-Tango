@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import CryptoKit
 import os.log
 
 /// GitHub用語集データモデル
@@ -20,7 +19,6 @@ struct GlossaryItem: Codable, Sendable {
 struct GlossaryData: Codable, Sendable {
     let version: String
     let lastUpdated: String
-    let signature: String?
     let glossary: [GlossaryItem]
 }
 
@@ -30,7 +28,6 @@ enum GitHubGlossaryError: LocalizedError {
     case networkError(Error)
     case invalidResponse
     case decodingError(Error)
-    case signatureVerificationFailed
     case noData
     
     var errorDescription: String? {
@@ -43,8 +40,6 @@ enum GitHubGlossaryError: LocalizedError {
             return "無効なレスポンスです"
         case .decodingError(let error):
             return "データの解析に失敗しました: \(error.localizedDescription)"
-        case .signatureVerificationFailed:
-            return "署名の検証に失敗しました"
         case .noData:
             return "データが取得できませんでした"
         }
@@ -118,16 +113,6 @@ class GitHubGlossaryService {
             let glossaryData = try JSONDecoder().decode(GlossaryData.self, from: contentData)
             logger.info("✅ JSONデコード成功: \(glossaryData.glossary.count)件の用語を取得")
             
-            // 署名検証（オプション、署名が提供されている場合のみ）
-            if let signature = glossaryData.signature, !signature.isEmpty {
-                let isValid = try verifySignature(data: contentData, signature: signature)
-                if !isValid {
-                    logger.error("❌ 署名の検証に失敗")
-                    throw GitHubGlossaryError.signatureVerificationFailed
-                }
-                logger.info("✅ 署名の検証に成功")
-            }
-            
             return glossaryData
             
         } catch let error as GitHubGlossaryError {
@@ -137,21 +122,6 @@ class GitHubGlossaryService {
             logger.error("❌ ネットワークエラー: \(error.localizedDescription)")
             throw GitHubGlossaryError.networkError(error)
         }
-    }
-    
-    /// 署名を検証（オプション機能）
-    /// - Parameters:
-    ///   - data: 検証するデータ
-    ///   - signature: Base64エンコードされた署名
-    /// - Returns: 検証結果
-    private func verifySignature(data: Data, signature: String) throws -> Bool {
-        // 実装は後で追加（公開鍵が必要）
-        // 現在は署名が存在する場合のみ検証を試みる
-        // 実際の実装では、CryptoKitを使用して公開鍵で署名を検証
-        
-        // 暫定的にtrueを返す（署名検証をスキップ）
-        // 本番環境では適切に実装する必要がある
-        return true
     }
 }
 

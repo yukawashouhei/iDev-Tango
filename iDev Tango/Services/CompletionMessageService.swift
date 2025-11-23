@@ -7,10 +7,14 @@
 //
 
 import Foundation
+import os.log
 
 @MainActor
 class CompletionMessageService {
     static let shared = CompletionMessageService()
+    
+    // ログ用のサブシステム
+    private let logger = Logger(subsystem: "com.idevtango", category: "CompletionMessageService")
     
     private init() {}
     
@@ -79,11 +83,18 @@ class CompletionMessageService {
         let level = (understandingRate / 10) * 10
         
         // 該当するメッセージ配列を取得
-        guard let levelMessages = messages[level],
-              let message = levelMessages.randomElement() else {
-            // デフォルトメッセージ（通常は発生しない）
+        guard let levelMessages = messages[level] else {
+            logger.warning("⚠️ 理解度\(level)%に対応するメッセージが見つかりません")
             return "お疲れ様でした😊"
         }
+        
+        // ランダムにメッセージを選択
+        guard let message = levelMessages.randomElement() else {
+            logger.warning("⚠️ メッセージ配列が空です")
+            return "お疲れ様でした😊"
+        }
+        
+        logger.info("📝 理解度\(level)%のメッセージを選択: \(message.prefix(20))... (選択肢数: \(levelMessages.count))")
         
         return message
     }
