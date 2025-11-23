@@ -8,10 +8,14 @@
 
 import Foundation
 import BackgroundTasks
+import os.log
 
 @MainActor
 class GlossaryBackgroundTaskService {
     static let shared = GlossaryBackgroundTaskService()
+    
+    // ログ用のサブシステム
+    private let logger = Logger(subsystem: "com.idevtango", category: "GlossaryBackgroundTaskService")
     
     private init() {}
     
@@ -35,15 +39,15 @@ class GlossaryBackgroundTaskService {
         
         do {
             try BGTaskScheduler.shared.submit(request)
-            print("✅ バックグラウンドタスクをスケジュールしました")
+            logger.info("✅ バックグラウンドタスクをスケジュールしました")
         } catch {
-            print("❌ バックグラウンドタスクのスケジュールに失敗: \(error)")
+            logger.error("❌ バックグラウンドタスクのスケジュールに失敗: \(error.localizedDescription)")
         }
     }
     
     /// バックグラウンドタスクのハンドラー
     private func handleBackgroundTask(task: BGAppRefreshTask) {
-        print("🔄 バックグラウンドタスクを実行中...")
+        logger.info("🔄 バックグラウンドタスクを実行中...")
         
         // タスクの期限を設定（30秒）
         task.expirationHandler = {
@@ -59,7 +63,7 @@ class GlossaryBackgroundTaskService {
         scheduleBackgroundTask()
         
         task.setTaskCompleted(success: true)
-        print("✅ バックグラウンドタスクが完了しました（次回起動時に同期予定）")
+        logger.info("✅ バックグラウンドタスクが完了しました（次回起動時に同期予定）")
     }
 }
 

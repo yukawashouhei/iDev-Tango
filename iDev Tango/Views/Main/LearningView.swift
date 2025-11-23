@@ -248,8 +248,16 @@ struct CompletionView: View {
     let showConfetti: Bool
     let onDismiss: () -> Void
     
-    private var completionMessage: String {
-        CompletionMessageService.shared.getMessage(for: understandingRate)
+    // メッセージを@Stateで保持（再描画時に変更されないように）
+    @State private var completionMessage: String
+    
+    // カスタムイニシャライザでメッセージを初期化
+    init(understandingRate: Int, showConfetti: Bool, onDismiss: @escaping () -> Void) {
+        self.understandingRate = understandingRate
+        self.showConfetti = showConfetti
+        self.onDismiss = onDismiss
+        // 初期化時に1回だけメッセージを決定（randomElement()はこの時点で1回だけ実行される）
+        _completionMessage = State(initialValue: CompletionMessageService.shared.getMessage(for: understandingRate))
     }
     
     var body: some View {
