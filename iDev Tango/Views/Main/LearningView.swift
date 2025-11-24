@@ -176,6 +176,13 @@ struct LearningView: View {
             // 全カード完了
             showCompletion = true
         }
+        
+        // 10問連続正解したタイミングでフラグを記録（レビューリクエストは一覧画面で実行）
+        if consecutiveCorrectCount == 10 {
+            Task {
+                await markReviewRequestNeeded()
+            }
+        }
     }
     
     // 理解度を計算
@@ -187,6 +194,16 @@ struct LearningView: View {
         
         let rate = Int((Double(correctCount) / Double(totalQuestions)) * 100)
         return min(rate, 100) // 最大100%
+    }
+    
+    // 10問連続正解を達成したことを記録（レビューリクエストは一覧画面で実行）
+    @MainActor
+    private func markReviewRequestNeeded() async {
+        // 10問連続正解を達成したことを記録
+        await Task.detached {
+            UserDefaults.standard.set(true, forKey: "reviewRequestNeeded")
+        }.value
+        logger.info("✅ 10問連続正解達成: レビューリクエストフラグを設定")
     }
 }
 
