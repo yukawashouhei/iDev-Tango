@@ -9,10 +9,12 @@
 
 import SwiftUI
 import SwiftData
+import StoreKit
 import os.log
 
 struct CardListView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.requestReview) var requestReview
     @StateObject private var learningService = LearningService.shared
     
     let deck: Deck
@@ -30,6 +32,10 @@ struct CardListView: View {
     @State private var isLoadingLearningCards = false
     @State private var preparedLearningCards: [Card] = []
     @State private var showLearningView = false
+    
+    // レビューリクエスト管理用のState（UserDefaultsから遅延読み込み）
+    @State private var reviewRequestCount = 0
+    @State private var lastReviewRequestDate: TimeInterval = 0
     
     // ログ用のサブシステム
     private let logger = Logger(subsystem: "com.idevtango", category: "CardListView")
@@ -152,6 +158,13 @@ struct CardListView: View {
         }
         .onAppear {
             logger.info("📋 CardListView表示: デッキ名=\(deck.name), カード数=\(cards.count)")
+            
+            // レビューリクエストの状態を非同期で読み込む
+            Task {
+                await loadReviewRequestState()
+                // レビューリクエストが必要かチェック
+                await checkAndRequestReviewIfNeeded()
+            }
         }
     }
     
@@ -201,6 +214,81 @@ struct CardListView: View {
         isLoadingLearningCards = false
         showLearningView = true
         logger.info("🎓 学習カード取得完了 - \(selectedCards.count)枚")
+    }
+    
+    // レビューリクエストの状態をUserDefaultsから読み込む（非同期）
+    @MainActor
+    private func loadReviewRequestState() async {
+        // バックグラウンドスレッドでUserDefaultsにアクセス
+        let count = await Task.detached {
+            UserDefaults.standard.integer(forKey: "reviewRequestCount")
+        }.value
+        
+        let date = await Task.detached {
+            UserDefaults.standard.double(forKey: "lastReviewRequestDate")
+        }.value
+        
+        // メインスレッドでStateを更新
+        reviewRequestCount = count
+        lastReviewRequestDate = date
+    }
+    
+    // レビューリクエストの状態をUserDefaultsに保存（非同期）
+    @MainActor
+    private func saveReviewRequestState(count: Int, date: TimeInterval) async {
+        await Task.detached {
+            UserDefaults.standard.set(count, forKey: "reviewRequestCount")
+            UserDefaults.standard.set(date, forKey: "lastReviewRequestDate")
+        }.value
+    }
+    
+    // レビューリクエストが必要かチェックして実行（非同期）
+    @MainActor
+    private func checkAndRequestReviewIfNeeded() async {
+        // レビューリクエストが必要かチェック
+        let reviewNeeded = await Task.detached {
+            UserDefaults.standard.bool(forKey: "reviewRequestNeeded")
+        }.value
+        
+        guard reviewNeeded else { return }
+        
+        // フラグをリセット
+        await Task.detached {
+            UserDefaults.standard.set(false, forKey: "reviewRequestNeeded")
+        }.value
+        
+        // 日付計算を最適化（一度だけ計算）
+        let now = Date().timeIntervalSince1970
+        let lastRequestDate = lastReviewRequestDate > 0 ? Date(timeIntervalSince1970: lastReviewRequestDate) : Date.distantPast
+        let daysSinceLastRequest = Calendar.current.dateComponents([.day], from: lastRequestDate, to: Date()).day ?? 365
+        
+        // 365日以内のリクエスト回数をチェック
+        if lastReviewRequestDate == 0 || daysSinceLastRequest >= 365 {
+            // 1年経過した場合はカウントをリセット
+            reviewRequestCount = 0
+        }
+        
+        // 365日以内に3回未満の場合のみリクエスト
+        guard reviewRequestCount < 3 else {
+            logger.info("🚫 レビューリクエスト上限到達: 365日以内に3回リクエスト済み")
+            return
+        }
+        
+        // 最後のリクエストから少なくとも90日経過しているか、初回の場合
+        guard lastReviewRequestDate == 0 || daysSinceLastRequest >= 90 else {
+            logger.info("⏳ レビューリクエスト待機中: 最後のリクエストから\(daysSinceLastRequest)日経過（90日必要）")
+            return
+        }
+        
+        // レビューリクエストを実行
+        requestReview()
+        reviewRequestCount += 1
+        lastReviewRequestDate = now
+        
+        // 状態を非同期で保存
+        await saveReviewRequestState(count: reviewRequestCount, date: lastReviewRequestDate)
+        
+        logger.info("⭐ レビューリクエスト: 回数=\(reviewRequestCount)")
     }
 }
 
