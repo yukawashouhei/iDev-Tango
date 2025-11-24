@@ -21,7 +21,7 @@ iDev Tangoは、iOS 26のFoundation Models Frameworkを使用したAI単語帳�
 - **言語**: Swift 6.2
 - **フレームワーク**: SwiftUI
 - **データベース**: SwiftData
-- **アーキテクチャ**: MVVM
+- **アーキテクチャ**: SwiftUI + SwiftData（@Queryを使用したリアクティブなデータ管理）
 - **AI**: Foundation Models Framework
 - **対象OS**: iOS 18.0+
 
@@ -32,9 +32,6 @@ iDev Tango/
 │   ├── Deck.swift
 │   ├── Card.swift
 │   └── ActivityLog.swift
-├── ViewModels/       # ViewModel
-│   ├── DeckListViewModel.swift
-│   └── CardListViewModel.swift
 ├── Views/           # SwiftUIビュー
 │   └── Main/
 │       ├── DeckListView.swift
@@ -42,7 +39,10 @@ iDev Tango/
 │       ├── AddCardView.swift
 │       └── LearningView.swift
 ├── Services/        # サービス層
-│   └── AIService.swift
+│   ├── AIService.swift
+│   ├── LearningService.swift
+│   ├── GlossarySyncService.swift
+│   └── ...
 └── Assets.xcassets/ # アセット
 ```
 
