@@ -33,10 +33,17 @@ struct ContentView: View {
                 }
                 
                 // バックグラウンドタスクから同期が必要とマークされている場合、または1日1回の定期チェックが必要な場合
-                let syncNeeded = UserDefaults.standard.bool(forKey: "glossary_sync_needed")
-                if syncNeeded || GlossarySyncService.shared.shouldCheckForUpdate() {
-                    UserDefaults.standard.set(false, forKey: "glossary_sync_needed")
-                    Task {
+                // UserDefaultsへのアクセスを非同期化してUIスレッドをブロックしない
+                Task {
+                    let syncNeeded = await Task.detached {
+                        UserDefaults.standard.bool(forKey: "glossary_sync_needed")
+                    }.value
+                    
+                    if syncNeeded || GlossarySyncService.shared.shouldCheckForUpdate() {
+                        await Task.detached {
+                            UserDefaults.standard.set(false, forKey: "glossary_sync_needed")
+                        }.value
+                        
                         await syncGlossaryIfNeeded()
                     }
                 }
