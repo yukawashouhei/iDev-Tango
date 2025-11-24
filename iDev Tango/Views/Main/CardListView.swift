@@ -162,6 +162,11 @@ struct CardListView: View {
             // レビューリクエストの状態を非同期で読み込む
             Task {
                 await loadReviewRequestState()
+                
+                // 画面遷移のアニメーションが完了するまで待機（0.5秒）
+                // これにより、アニメーションとレビューダイアログの表示が競合することを防ぐ
+                try? await Task.sleep(nanoseconds: 500_000_000)
+                
                 // レビューリクエストが必要かチェック
                 await checkAndRequestReviewIfNeeded()
             }
