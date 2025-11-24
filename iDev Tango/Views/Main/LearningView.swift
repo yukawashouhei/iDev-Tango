@@ -53,7 +53,7 @@ struct LearningView: View {
                     understandingRate: understandingRate,
                     showConfetti: showConfetti,
                     onDismiss: {
-                        dismiss()
+                    dismiss()
                     }
                 )
             } else if !cards.isEmpty {
@@ -262,17 +262,17 @@ struct CompletionView: View {
     
     var body: some View {
         ZStack {
-            VStack(spacing: 30) {
-                Spacer()
-                
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 80))
-                    .foregroundColor(.green)
-                
-                Text("学習完了！")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                
+        VStack(spacing: 30) {
+            Spacer()
+            
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 80))
+                .foregroundColor(.green)
+            
+            Text("学習完了！")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+            
                 if showConfetti {
                     Text("🎉 10問連続正解！素晴らしい！🎉")
                         .font(.title2)
@@ -282,24 +282,24 @@ struct CompletionView: View {
                 }
                 
                 Text(completionMessage)
-                    .font(.title3)
-                    .foregroundColor(.gray)
+                .font(.title3)
+                .foregroundColor(.gray)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 30)
-                
-                Spacer()
-                
-                Button(action: onDismiss) {
-                    Text("閉じる")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .cornerRadius(25)
-                }
-                .padding(.horizontal, 30)
-                .padding(.bottom, 30)
+            
+            Spacer()
+            
+            Button(action: onDismiss) {
+                Text("閉じる")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.blue)
+                    .cornerRadius(25)
+            }
+            .padding(.horizontal, 30)
+            .padding(.bottom, 30)
             }
             .zIndex(1) // VStackを前面に表示
             
