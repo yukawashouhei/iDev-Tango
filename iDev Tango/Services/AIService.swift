@@ -2,12 +2,12 @@
 //  AIService.swift
 //  iDev Tango
 //
-//  Foundation Models Frameworkを使用したAI定義生成サービス
-//  オンデバイスAIで単語の定義を生成
+//  Firebase AI Logic（Gemini 1.5 Flash-8B）を使用したAI定義生成サービス
+//  App Checkで保護されたクラウドAIで単語の定義を生成
 //
 
 import Foundation
-import FoundationModels
+import FirebaseAI
 import Combine
 import os.log
 
@@ -19,24 +19,27 @@ struct DefinitionResponse {
 // AIエラー定義
 enum AIError: LocalizedError {
     case notAvailable
-    case deviceNotEligible
-    case appleIntelligenceNotEnabled
-    case modelNotReady
+    case networkError(Error)
+    case authenticationError
+    case rateLimitExceeded
     case generationFailed
+    case invalidResponse
     case unknown
     
     var errorDescription: String? {
         switch self {
         case .notAvailable:
             return "AIが利用できません"
-        case .deviceNotEligible:
-            return "この端末はApple Intelligenceに対応していません"
-        case .appleIntelligenceNotEnabled:
-            return "Apple Intelligenceを有効にしてください"
-        case .modelNotReady:
-            return "AIモデルの準備中です"
+        case .networkError(let error):
+            return "ネットワークエラー: \(error.localizedDescription)"
+        case .authenticationError:
+            return "認証エラーが発生しました"
+        case .rateLimitExceeded:
+            return "リクエスト制限に達しました。しばらく待ってから再試行してください"
         case .generationFailed:
             return "定義の生成に失敗しました"
+        case .invalidResponse:
+            return "無効なレスポンスが返されました"
         case .unknown:
             return "不明なエラーが発生しました"
         }
@@ -47,47 +50,33 @@ enum AIError: LocalizedError {
 class AIService: ObservableObject {
     static let shared = AIService()
     
-    @Published var isAvailable: Bool = false
-    @Published var availabilityMessage: String = ""
+    @Published var isAvailable: Bool = true
+    @Published var availabilityMessage: String = "AI利用可能"
     
     // ログ用のサブシステム
     private let logger = Logger(subsystem: "com.idevtango", category: "AIService")
     
+    // Gemini 1.5 Flash-8Bモデル
+    private let model: GenerativeModel
+    
     private init() {
+        // Vertex AIを使用してGemini 1.5 Flash-8Bモデルを初期化
+        let vertexAI = VertexAI.vertexAI()
+        model = vertexAI.generativeModel(modelName: "gemini-1.5-flash-8b")
+        
         checkAvailability()
     }
     
     // AI利用可能性チェック
     func checkAvailability() {
-        switch SystemLanguageModel.default.availability {
-        case .available:
-            isAvailable = true
-            availabilityMessage = "AI利用可能"
-        case .unavailable(.deviceNotEligible):
-            isAvailable = false
-            availabilityMessage = "この端末はApple Intelligenceに対応していません"
-        case .unavailable(.appleIntelligenceNotEnabled):
-            isAvailable = false
-            availabilityMessage = "Apple Intelligenceを有効にしてください"
-        case .unavailable(.modelNotReady):
-            isAvailable = false
-            availabilityMessage = "AIモデルの準備中です"
-        default:
-            isAvailable = false
-            availabilityMessage = "AIが利用できません"
-        }
+        // Firebase AI Logicは常に利用可能とみなす
+        // 実際の利用可能性はAPI呼び出し時にエラーハンドリングで確認
+        isAvailable = true
+        availabilityMessage = "AI利用可能"
     }
     
     // 単語の定義を生成（分野別専門家モード）
     func fetchDefinition(for term: String) async throws -> DefinitionResponse {
-        // 利用可能性チェック
-        guard SystemLanguageModel.default.isAvailable else {
-            throw AIError.notAvailable
-        }
-        
-        // セッション作成
-        let session = LanguageModelSession()
-        
         // Mobile・iOS・Swift・SwiftUI専門家モードのプロンプト
         let prompt = """
         あなたはMobile、iOS、Swift、SwiftUIの専門家です。以下の単語について、簡潔な意味を100字以内の1〜2文で提供してください。
@@ -105,25 +94,43 @@ class AIService: ObservableObject {
         """
         
         do {
-            // AI生成実行
-            // 参考: https://zenn.dev/lancers/articles/6be34c9ba461fc
-            let response = try await session.respond(to: prompt)
+            logger.info("🤖 Gemini 1.5 Flash-8Bにリクエスト送信: \(term)")
+            
+            // Gemini APIを呼び出してテキスト生成
+            let response = try await model.generateContent(prompt)
             
             // レスポンスからテキストを取得
-            let definition = response.content
-            
-            guard !definition.isEmpty else {
-                throw AIError.generationFailed
+            guard let definition = response.text, !definition.isEmpty else {
+                logger.error("❌ 空のレスポンスが返されました")
+                throw AIError.invalidResponse
             }
+            
+            logger.info("✅ AI生成成功: \(definition.prefix(50))...")
             
             return DefinitionResponse(definition: definition)
-        } catch {
+        } catch let error as NSError {
             logger.error("❌ AI生成エラー: \(error.localizedDescription)")
-            if let aiError = error as? AIError {
-                throw aiError
+            
+            // エラーの種類に応じて適切なAIErrorを返す
+            if error.domain == NSURLErrorDomain {
+                switch error.code {
+                case NSURLErrorNotConnectedToInternet, NSURLErrorNetworkConnectionLost:
+                    throw AIError.networkError(error)
+                case NSURLErrorTimedOut:
+                    throw AIError.networkError(error)
+                default:
+                    throw AIError.networkError(error)
+                }
+            } else if error.domain.contains("auth") || error.code == 401 || error.code == 403 {
+                throw AIError.authenticationError
+            } else if error.code == 429 {
+                throw AIError.rateLimitExceeded
             } else {
-                throw AIError.unknown
+                throw AIError.generationFailed
             }
+        } catch {
+            logger.error("❌ 予期しないエラー: \(error.localizedDescription)")
+            throw AIError.unknown
         }
     }
 }
