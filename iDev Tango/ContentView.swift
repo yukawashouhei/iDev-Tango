@@ -39,9 +39,9 @@ struct ContentView: View {
                         UserDefaults.standard.bool(forKey: "glossary_sync_needed")
                     }.value
                     
-                    if syncNeeded || GlossarySyncService.shared.shouldCheckForUpdate() {
+                if syncNeeded || GlossarySyncService.shared.shouldCheckForUpdate() {
                         await Task.detached {
-                            UserDefaults.standard.set(false, forKey: "glossary_sync_needed")
+                    UserDefaults.standard.set(false, forKey: "glossary_sync_needed")
                         }.value
                         
                         await syncGlossaryIfNeeded()

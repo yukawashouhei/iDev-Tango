@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		7DB16D282EEC67630087272D /* FirebaseAI in Frameworks */ = {isa = PBXBuildFile; productRef = 7DB16D272EEC67630087272D /* FirebaseAI */; };
+		7DB16D2A2EEC67630087272D /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = 7DB16D292EEC67630087272D /* FirebaseAppCheck */; };
+		7DB16D2C2EEC67630087272D /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 7DB16D2B2EEC67630087272D /* FirebaseCore */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		7DD0766F2EA4A67F0071D398 /* iDev Tango.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "iDev Tango.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +29,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7DB16D2A2EEC67630087272D /* FirebaseAppCheck in Frameworks */,
+				7DB16D2C2EEC67630087272D /* FirebaseCore in Frameworks */,
+				7DB16D282EEC67630087272D /* FirebaseAI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +74,9 @@
 			);
 			name = "iDev Tango";
 			packageProductDependencies = (
+				7DB16D272EEC67630087272D /* FirebaseAI */,
+				7DB16D292EEC67630087272D /* FirebaseAppCheck */,
+				7DB16D2B2EEC67630087272D /* FirebaseCore */,
 			);
 			productName = "iDev Tango";
 			productReference = 7DD0766F2EA4A67F0071D398 /* iDev Tango.app */;
@@ -94,6 +106,9 @@
 			);
 			mainGroup = 7DD076662EA4A67F0071D398;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				7DB16D262EEC67620087272D /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 7DD076702EA4A67F0071D398 /* Products */;
 			projectDirPath = "";
@@ -336,6 +351,35 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		7DB16D262EEC67620087272D /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.7.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		7DB16D272EEC67630087272D /* FirebaseAI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7DB16D262EEC67620087272D /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAI;
+		};
+		7DB16D292EEC67630087272D /* FirebaseAppCheck */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7DB16D262EEC67620087272D /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAppCheck;
+		};
+		7DB16D2B2EEC67630087272D /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7DB16D262EEC67620087272D /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 7DD076672EA4A67F0071D398 /* Project object */;
 }
