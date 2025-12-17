@@ -60,9 +60,10 @@ class AIService: ObservableObject {
     private let model: GenerativeModel
     
     private init() {
-        // Vertex AIを使用してGemini 1.5 Flash-8Bモデルを初期化
-        let vertexAI = VertexAI.vertexAI()
-        model = vertexAI.generativeModel(modelName: "gemini-1.5-flash-8b")
+        // Gemini Developer APIを使用してGemini 1.5 Flash-8Bモデルを初期化
+        // Firebase AI LogicでGoogleAIバックエンドを使用
+        let ai = FirebaseAI.firebaseAI(backend: .googleAI())
+        model = ai.generativeModel(modelName: "gemini-1.5-flash-8b")
         
         checkAvailability()
     }

@@ -37,7 +37,7 @@ struct CardListView: View {
     @State private var reviewRequestCount = 0
     @State private var lastReviewRequestDate: TimeInterval = 0
     
-    // ログ用のサブシステム
+    // ログ用のサブ™™システム
     private let logger = Logger(subsystem: "com.idevtango", category: "CardListView")
     
     // カスタムイニシャライザで@Queryを初期化
