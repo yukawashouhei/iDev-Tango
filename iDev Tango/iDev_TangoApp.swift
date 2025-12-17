@@ -11,7 +11,7 @@ import FirebaseCore
 import FirebaseAppCheck
 
 // App Checkプロバイダファクトリー
-final class AppCheckProviderFactory: NSObject, AppCheckProviderFactory {
+final class CustomAppCheckProviderFactory: NSObject, AppCheckProviderFactory {
     func createProvider(with app: FirebaseApp) -> AppCheckProvider? {
         #if DEBUG
         // デバッグビルドではデバッグプロバイダを使用
@@ -27,7 +27,7 @@ final class AppCheckProviderFactory: NSObject, AppCheckProviderFactory {
 struct iDev_TangoApp: App {
     init() {
         // App Checkプロバイダを設定
-        AppCheck.setAppCheckProviderFactory(AppCheckProviderFactory())
+        AppCheck.setAppCheckProviderFactory(CustomAppCheckProviderFactory())
         
         // Firebaseを初期化
         FirebaseApp.configure()
