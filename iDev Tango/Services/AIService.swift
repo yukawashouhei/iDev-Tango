@@ -60,10 +60,10 @@ class AIService: ObservableObject {
     private let model: GenerativeModel
     
     private init() {
-        // Gemini Developer APIを使用してGemini 1.5 Flash-8Bモデルを初期化
+        // Gemini Developer APIを使用してGemini 2.0 Flash-Liteモデルを初期化
         // Firebase AI LogicでGoogleAIバックエンドを使用
         let ai = FirebaseAI.firebaseAI(backend: .googleAI())
-        model = ai.generativeModel(modelName: "gemini-1.5-flash-8b")
+        model = ai.generativeModel(modelName: "gemini-2.0-flash-lite")
         
         checkAvailability()
     }
