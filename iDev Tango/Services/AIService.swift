@@ -2,7 +2,7 @@
 //  AIService.swift
 //  iDev Tango
 //
-//  Firebase AI Logic（Gemini 1.5 Flash-8B）を使用したAI定義生成サービス
+//  Firebase AI Logic（Gemini 2.5 Flash-Lite）を使用したAI定義生成サービス
 //  App Checkで保護されたクラウドAIで単語の定義を生成
 //
 
@@ -56,14 +56,14 @@ class AIService: ObservableObject {
     // ログ用のサブシステム
     private let logger = Logger(subsystem: "com.idevtango", category: "AIService")
     
-    // Gemini 1.5 Flash-8Bモデル
+    // Gemini 2.5 Flash-Liteモデル
     private let model: GenerativeModel
     
     private init() {
-        // Gemini Developer APIを使用してGemini 2.0 Flashモデルを初期化
+        // Gemini Developer APIを使用してGemini 2.5 Flash-Liteモデルを初期化
         // Firebase AI LogicでGoogleAIバックエンドを使用
         let ai = FirebaseAI.firebaseAI(backend: .googleAI())
-        model = ai.generativeModel(modelName: "gemini-2.0-flash")
+        model = ai.generativeModel(modelName: "gemini-2.5-flash-lite")
         
         checkAvailability()
     }
@@ -95,7 +95,7 @@ class AIService: ObservableObject {
         """
         
         do {
-            logger.info("🤖 Gemini 1.5 Flash-8Bにリクエスト送信: \(term)")
+            logger.info("🤖 Gemini 2.5 Flash-Liteにリクエスト送信: \(term)")
             
             // Gemini APIを呼び出してテキスト生成
             let response = try await model.generateContent(prompt)
