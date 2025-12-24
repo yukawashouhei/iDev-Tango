@@ -2,7 +2,7 @@
 //  iDev_TangoApp.swift
 //  iDev Tango
 //
-//  Gemini 1.5 Flash-8B + Firebase AI Logic + App Checkを使用したAI単語帳アプリ
+//  Gemini 2.5 Flash-Lite + Firebase AI Logic + App Checkを使用したAI単語帳アプリ
 //
 
 import SwiftUI
