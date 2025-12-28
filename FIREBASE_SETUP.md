@@ -1,6 +1,6 @@
 # Firebaseセットアップ手順
 
-このドキュメントでは、Gemini 1.5 Flash-8B + Firebase AI Logic + App Checkのセットアップ手順を説明します。
+このドキュメントでは、Gemini 2.5 Flash-Lite + Firebase AI Logic + App Checkのセットアップ手順を説明します。
 
 ## 1. Firebaseプロジェクトの作成
 
