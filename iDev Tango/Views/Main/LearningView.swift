@@ -11,17 +11,19 @@ import SwiftData
 import os.log
 
 struct LearningView: View {
-    let initialCards: [Card] // 初期カード配列
+    // カード配列（初期化時に固定、Stateで二重保持しない）
+    // Cardはclassなので参照コピーだが、配列の二重保持を避けることでメモリ効率を向上
+    let cards: [Card]
     
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
-    @StateObject private var learningService = LearningService.shared
+    
+    // シングルトンは直接参照（監視不要なため@ObservedObjectも不要）
+    // LearningServiceは状態を公開していないので、単純なletで十分
+    private let learningService = LearningService.shared
     @State private var currentIndex = 0
     @State private var isFlipped = false
     @State private var showCompletion = false
-    
-    // 学習用の固定カード配列（Stateで保持）
-    @State private var cards: [Card] = []
     
     // 「説明できる」を押した回数
     @State private var correctCount = 0
@@ -136,11 +138,10 @@ struct LearningView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-            // カード配列を固定化（学習中は変更しない）
-            cards = initialCards
-            correctCount = 0 // カウントをリセット
-            consecutiveCorrectCount = 0 // 連続正解数をリセット
-            logger.info("🎯 学習開始: カード配列を固定化 - \(cards.count)枚")
+            // 状態をリセット（カード配列は初期化時に固定済み）
+            correctCount = 0
+            consecutiveCorrectCount = 0
+            logger.info("🎯 学習開始: \(cards.count)枚")
             // 学習セッション開始
             learningService.startLearningSession()
         }
@@ -360,7 +361,7 @@ struct UnderstandingButtonStyle: ButtonStyle {
     }()
     
     NavigationStack {
-        LearningView(initialCards: (try? previewContainer.mainContext.fetch(FetchDescriptor<Card>())) ?? [])
+        LearningView(cards: (try? previewContainer.mainContext.fetch(FetchDescriptor<Card>())) ?? [])
             .modelContainer(previewContainer)
     }
 }
