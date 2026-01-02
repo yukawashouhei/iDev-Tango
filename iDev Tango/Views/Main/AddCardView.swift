@@ -12,7 +12,10 @@ import SwiftData
 struct AddCardView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var aiService = AIService.shared
+    
+    // シングルトンは@StateObjectではなく@ObservedObjectを使用
+    // （@StateObjectはViewが所有・生成するオブジェクト用、シングルトンには不適切）
+    @ObservedObject private var aiService = AIService.shared
     
     let deck: Deck
     let onCardAdded: () -> Void
