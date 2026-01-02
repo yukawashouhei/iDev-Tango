@@ -92,26 +92,22 @@ struct ConfettiView: View {
                 }
                 
                 // TimelineViewでアニメーションを駆動
+                // 注意: Task生成を避け、onChange(of:)で状態更新を行う（Apple推奨のメモリ効率化）
                 TimelineView(.animation) { timeline in
-                    let now = timeline.date
-                    
-                    // 状態更新はTask内で行う（ビュー更新サイクル外）
-                    Task { @MainActor in
-                        guard let startTime = animationStartTime else { return }
-                        
-                        // 4秒経過したらアニメーション終了
-                        if now.timeIntervalSince(startTime) > animationDuration {
-                            if !particles.isEmpty {
-                                particles.removeAll()
+                    Color.clear
+                        .onChange(of: timeline.date) { _, newDate in
+                            guard let startTime = animationStartTime else { return }
+                            
+                            // 4秒経過したらアニメーション終了
+                            if newDate.timeIntervalSince(startTime) > animationDuration {
+                                if !particles.isEmpty {
+                                    particles.removeAll()
+                                }
+                                return
                             }
-                            return
+                            
+                            updateParticles(canvasSize: geometry.size, now: newDate)
                         }
-                        
-                        updateParticles(canvasSize: geometry.size, now: now)
-                    }
-                    
-                    // 空のView（描画はCanvasで処理）
-                    return Color.clear
                 }
             }
         }
@@ -129,8 +125,8 @@ struct ConfettiView: View {
             let spread = Double.pi / 2  // ±90度の範囲
             let angle = baseAngle + Double.random(in: -spread..<spread)
             
-            // ゆっくりとした速度（元の実装に合わせて1/10程度）
-            let speed = Double.random(in: 20...40) // 元: 200-400 → 20-40
+            // ゆっくりとした速度
+            let speed = Double.random(in: 1800...4000)
             
             // 速度ベクトル（全方向に）
             let vx = cos(angle) * speed
@@ -179,10 +175,10 @@ struct ConfettiView: View {
         let deltaTime = 1.0 / 60.0 // 60FPS
         let elapsed = now.timeIntervalSince(startTime)
         
-        let gravity: CGFloat = 0.5 //
+        let gravity: CGFloat = 2500 //
         
         // 空気抵抗
-        let drag: CGFloat = 0.998
+        let drag: CGFloat = 0.88
         
         for i in particles.indices {
             var particle = particles[i]
