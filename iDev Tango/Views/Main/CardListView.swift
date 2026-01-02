@@ -130,7 +130,7 @@ struct CardListView: View {
                     }
                     .disabled(cards.isEmpty || isLoadingLearningCards)
                     .navigationDestination(isPresented: $showLearningView) {
-                        LearningView(initialCards: preparedLearningCards)
+                        LearningView(cards: preparedLearningCards)
                     }
                 }
                 .padding(.horizontal, 20)
