@@ -306,7 +306,7 @@ struct ConfettiView: View {
             let vy = sin(angle) * speed
             
             // 長方形のサイズ
-            let baseSize = CGFloat.random(in: 8...16)
+            let baseSize = CGFloat.random(in: 6...14)
             let width = baseSize * CGFloat.random(in: 0.5...2.0)
             let height = baseSize * CGFloat.random(in: 0.4...1.2)
             
@@ -318,11 +318,11 @@ struct ConfettiView: View {
             let rotationY = Double.random(in: 0...(2 * .pi))
             
             // 回転速度（ConfettiStandaloneの値に合わせる）
-            let rotationXSpeed = Double.random(in: 2.0...6.0)
-            let rotationYSpeed = Double.random(in: 1.5...5.0)
+            let rotationXSpeed = Double.random(in: 2.0...15.0)
+            let rotationYSpeed = Double.random(in: 4.0...20.0)
             
             // 風の影響（ConfettiStandaloneの値に合わせる）
-            let windForce = Double.random(in: -150...150)
+            let windForce = Double.random(in: -600...600)
             
             let particle = ConfettiParticle(
                 position: origin,
