@@ -99,6 +99,9 @@ struct DeckListView: View {
                         .listStyle(.plain)
                         .scrollContentBackground(.hidden)
                     }
+                    
+                    // バナー広告（サブスク購入者には非表示）
+                    BannerAdView()
                 }
             }
             .alert("新しいフォルダを作成", isPresented: $showingAddDeck) {

@@ -32,6 +32,11 @@ struct iDev_TangoApp: App {
         // Firebaseを初期化
         FirebaseApp.configure()
         
+        // AdMob SDKを初期化
+        Task { @MainActor in
+            AdService.shared.initialize()
+        }
+        
         // バックグラウンドタスクを登録
         GlossaryBackgroundTaskService.shared.registerBackgroundTask()
     }
