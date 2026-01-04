@@ -105,8 +105,8 @@ class GlossaryCacheService {
             if FileManager.default.fileExists(atPath: cacheFileURL.path) {
                 try FileManager.default.removeItem(at: cacheFileURL)
             }
-            UserDefaults.standard.removeObject(forKey: lastUpdateKey)
-            logger.info("✅ キャッシュをクリアしました")
+        UserDefaults.standard.removeObject(forKey: lastUpdateKey)
+        logger.info("✅ キャッシュをクリアしました")
         } catch {
             logger.error("❌ キャッシュのクリアに失敗: \(error.localizedDescription)")
         }

@@ -41,8 +41,8 @@ struct BannerAdRepresentable: UIViewRepresentable {
         let containerView = UIView()
         containerView.backgroundColor = .clear
         
-        // バナー広告ビューを作成
-        let bannerView = GADBannerView(adSize: GADAdSizeBanner)
+        // バナー広告ビューを作成（標準バナーサイズ: 320x50）
+        let bannerView = BannerView(adSize: AdSizeBanner)
         bannerView.adUnitID = AdService.bannerAdUnitID
         bannerView.translatesAutoresizingMaskIntoConstraints = false
         
@@ -61,7 +61,7 @@ struct BannerAdRepresentable: UIViewRepresentable {
         ])
         
         // 広告をロード
-        bannerView.load(GADRequest())
+        bannerView.load(Request())
         
         return containerView
     }
