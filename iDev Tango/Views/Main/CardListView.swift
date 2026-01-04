@@ -136,6 +136,9 @@ struct CardListView: View {
                 .padding(.horizontal, 20)
                 .padding(.vertical, 15)
                 .background(Color.white.opacity(0.95))
+                
+                // バナー広告（サブスク購入者には非表示）
+                BannerAdView()
             }
         }
         .navigationTitle(deck.name)
