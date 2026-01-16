@@ -9,6 +9,12 @@ xcuserdata/
 # Firebase
 GoogleService-Info.plist
 
+# AdMob設定（本番用App ID）
+iDev-Tango-Info.plist
+
+# GitHub Token（Personal Access Token）
+GitHub-Info.plist
+
 # macOS
 .DS_Store
 

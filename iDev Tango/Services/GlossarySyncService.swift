@@ -25,7 +25,8 @@ class GlossarySyncService {
     /// 用語集を同期（GitHubから取得してSwiftDataに反映）
     /// - Parameters:
     ///   - context: SwiftDataのModelContext
-    ///   - token: GitHub Personal Access Token（オプション）
+    ///   - token: GitHub Personal Access Token（オプション、通常は指定不要）
+    ///            指定されない場合はGitHubTokenServiceから自動取得
     ///   - forceUpdate: 強制更新フラグ（キャッシュを無視）
     func syncGlossary(context: ModelContext, token: String? = nil, forceUpdate: Bool = false) async throws {
         logger.info("🔄 用語集の同期を開始")
@@ -40,6 +41,8 @@ class GlossarySyncService {
         // GitHubから取得を試みる
         do {
             logger.info("🌐 GitHubから用語集を取得中...")
+            // tokenが指定されていない場合は、GitHubTokenServiceから自動取得
+            // GitHubGlossaryService内で処理されるため、ここではそのまま渡す
             let glossaryData = try await githubService.fetchGlossary(token: token)
             
             // キャッシュに保存
