@@ -11,10 +11,12 @@
 		7DB16D282EEC67630087272D /* FirebaseAI in Frameworks */ = {isa = PBXBuildFile; productRef = 7DB16D272EEC67630087272D /* FirebaseAI */; };
 		7DB16D2A2EEC67630087272D /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = 7DB16D292EEC67630087272D /* FirebaseAppCheck */; };
 		7DB16D2C2EEC67630087272D /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 7DB16D2B2EEC67630087272D /* FirebaseCore */; };
+		7DE32C102F249B5B0029003F /* GitHub-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7DE32C0F2F249B5B0029003F /* GitHub-Info.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		7DD0766F2EA4A67F0071D398 /* iDev Tango.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "iDev Tango.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7DE32C0F2F249B5B0029003F /* GitHub-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GitHub-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -45,6 +47,7 @@
 			children = (
 				7DD076712EA4A67F0071D398 /* iDev Tango */,
 				7DD076702EA4A67F0071D398 /* Products */,
+				7DE32C0F2F249B5B0029003F /* GitHub-Info.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -128,6 +131,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7DE32C102F249B5B0029003F /* GitHub-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
