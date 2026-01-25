@@ -67,6 +67,7 @@ class GitHubGlossaryService {
     
     /// GitHubから用語集JSONファイルを取得
     /// - Parameter token: GitHub Personal Access Token（オプション、読み取り専用）
+    ///                     指定されない場合はGitHubTokenServiceから自動取得
     /// - Returns: 用語集データ
     func fetchGlossary(token: String? = nil) async throws -> GlossaryData {
         logger.info("🌐 GitHub APIにリクエストを送信: \(self.baseURL)")
@@ -80,10 +81,13 @@ class GitHubGlossaryService {
         request.httpMethod = "GET"
         request.setValue("application/vnd.github.v3+json", forHTTPHeaderField: "Accept")
         
-        // 認証トークンが提供されている場合は追加
-        if let token = token {
+        // 認証トークン: 引数で指定されたもの、またはGitHubTokenServiceから取得
+        let authToken = token ?? GitHubTokenService.shared.getToken()
+        if let token = authToken {
             request.setValue("token \(token)", forHTTPHeaderField: "Authorization")
             logger.info("🔐 認証トークンを使用してリクエスト")
+        } else {
+            logger.warning("⚠️ 認証トークンが設定されていません。Publicリポジトリの場合は問題ありませんが、Privateリポジトリの場合はエラーになる可能性があります。")
         }
         
         do {

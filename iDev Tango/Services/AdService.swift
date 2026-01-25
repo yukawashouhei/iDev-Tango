@@ -38,10 +38,11 @@ final class AdService: ObservableObject {
     
     /// バナー広告ユニットID
     /// 本番環境では実際の広告ユニットIDに置き換えてください
+    /// AdMobコンソールから本番用Ad Unit IDを取得して、以下のXXXXXを置き換えてください
     #if DEBUG
     static let bannerAdUnitID = "ca-app-pub-3940256099942544/2934735716" // テスト用
     #else
-    static let bannerAdUnitID = "ca-app-pub-XXXXX/XXXXX" // 本番用（要置き換え）
+    static let bannerAdUnitID = "ca-app-pub-XXXXX/XXXXX" // 本番用（AdMobコンソールから取得したIDに置き換え）
     #endif
     
     // MARK: - Initialization
