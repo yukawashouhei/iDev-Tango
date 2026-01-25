@@ -42,7 +42,7 @@ final class AdService: ObservableObject {
     #if DEBUG
     static let bannerAdUnitID = "ca-app-pub-3940256099942544/2934735716" // テスト用
     #else
-    static let bannerAdUnitID = "ca-app-pub-XXXXX/XXXXX" // 本番用（AdMobコンソールから取得したIDに置き換え）
+    static let bannerAdUnitID = "ca-app-pub-6898713833552918/1214353514" // 本番用
     #endif
     
     // MARK: - Initialization
