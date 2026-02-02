@@ -58,14 +58,13 @@ final class AdService: ObservableObject {
         logger.info("📢 AdMob SDK初期化を開始")
         
         // App Tracking Transparencyの許可をリクエスト
-        requestTrackingAuthorization { [weak self] in
+        self.requestTrackingAuthorization { [weak self] in
             // AdMob SDKを初期化
             MobileAds.shared.start { [weak self] status in
-                self?.logger.info("✅ AdMob SDK初期化完了")
-                self?.isInitialized = true
-                
-                // 初期化完了後に広告読み込み状態を更新
-                DispatchQueue.main.async {
+                Task { @MainActor in
+                    self?.logger.info("✅ AdMob SDK初期化完了")
+                    self?.isInitialized = true
+                    // 初期化完了後に広告読み込み状態を更新
                     self?.isAdLoaded = true
                 }
             }
@@ -73,24 +72,24 @@ final class AdService: ObservableObject {
     }
     
     /// App Tracking Transparencyの許可をリクエスト
-    private func requestTrackingAuthorization(completion: @escaping () -> Void) {
+    private func requestTrackingAuthorization(completion: @escaping @Sendable () -> Void) {
         // iOS 14以上でATTをリクエスト
         if #available(iOS 14, *) {
-            ATTrackingManager.requestTrackingAuthorization { status in
+            ATTrackingManager.requestTrackingAuthorization { [weak self, completion] status in
                 switch status {
                 case .authorized:
-                    self.logger.info("✅ トラッキング許可: authorized")
+                    self?.logger.info("✅ トラッキング許可: authorized")
                 case .denied:
-                    self.logger.info("⚠️ トラッキング許可: denied")
+                    self?.logger.info("⚠️ トラッキング許可: denied")
                 case .restricted:
-                    self.logger.info("⚠️ トラッキング許可: restricted")
+                    self?.logger.info("⚠️ トラッキング許可: restricted")
                 case .notDetermined:
-                    self.logger.info("⚠️ トラッキング許可: notDetermined")
+                    self?.logger.info("⚠️ トラッキング許可: notDetermined")
                 @unknown default:
-                    self.logger.info("⚠️ トラッキング許可: unknown")
+                    self?.logger.info("⚠️ トラッキング許可: unknown")
                 }
                 
-                DispatchQueue.main.async {
+                Task { @MainActor in
                     completion()
                 }
             }
@@ -105,5 +104,4 @@ final class AdService: ObservableObject {
         logger.info("📢 広告表示状態を更新: \(self.shouldShowAds ? "表示" : "非表示")")
     }
 }
-
 
