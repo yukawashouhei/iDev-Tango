@@ -6,5 +6,7 @@
 	<string></string>
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-6898713833552918~3698198006</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>あなたに関連性の高い広告を表示するために使用します。許可しない場合でもアプリは通常通りご利用いただけます。</string>
 </dict>
 </plist>

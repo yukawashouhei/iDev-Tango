@@ -47,6 +47,9 @@ struct iDev_TangoApp: App {
                 .onAppear {
                     // バックグラウンドタスクをスケジュール
                     GlossaryBackgroundTaskService.shared.scheduleBackgroundTask()
+                    
+                    // ATTダイアログを表示（アプリがアクティブになってから）
+                    AdService.shared.requestTrackingAuthorizationIfNeeded()
                 }
         }
         .modelContainer(for: [Deck.self, Card.self, ActivityLog.self])
